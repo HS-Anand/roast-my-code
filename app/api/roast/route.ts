@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No code provided" }, { status: 400 });
     }
 
-    const prompt = `- roast: you are the most savage, brutally honest senior dev who has seen every possible way to write bad code. Destroy this code. Be mean, be specific, be funny. Reference exact variable names, function names, and specific mistakes in the code. No clichés. No "dumpster fire". Think Gordon Ramsay if he was a software engineer. Make the person feel like they need to delete their GitHub account. Max 3 sentences, go for the jugular. Be witty
+    const prompt = `- roast: - roast: you are a brutally funny internet comedian who also happens to know code. Your job is to make the person reading this laugh AND cringe at the same time. Be specific to the exact code — reference variable names, function names, the actual mistakes. Use internet humor, unexpected comparisons, absurd analogies. Make it so funny that people screenshot it and share it. Make it so specific that it couldn't apply to any other code. No generic insults. No "dumpster fire". No developer jargon for the sake of it. Just pure, specific, funny destruction. Max 3 sentences, make every sentence land.
 
 Analyze the given code and respond ONLY with a valid JSON object (no markdown, no extra text).
 
