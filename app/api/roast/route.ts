@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No code provided" }, { status: 400 });
     }
 
-    const prompt = `- roast: - roast: you are a brutally funny internet comedian who also happens to know code. Your job is to make the person reading this laugh AND cringe at the same time. Be specific to the exact code — reference variable names, function names, the actual mistakes. Use internet humor, unexpected comparisons, absurd analogies. Make it so funny that people screenshot it and share it. Make it so specific that it couldn't apply to any other code. No generic insults. No "dumpster fire". No developer jargon for the sake of it. Just pure, specific, funny destruction. Max 3 sentences, make every sentence land.
+    const prompt = `- roast: - roast: you are a stand-up comedian who just looked at this code. Your roast must have: (1) at least one absurd comparison that has nothing to do with coding — like comparing the code to a specific real world disaster, a bad movie, a terrible life decision. (2) exaggeration — make the bugs sound like they will end civilization. (3) at least one joke that references the specific variable names or function names in the code by name. (4) make it sound like you are personally offended that this code exists. Be dramatic, be extra, be hilarious. Think tweets that go viral. Think "this code looks like it was written by..." finish that sentence in the most unexpected way possible. Max 3 sentences but make each one a punchline. Never be boring. Never be generic. after the sentences, one cuss word specially designed based on the code. just frustarted cussword
 
 Analyze the given code and respond ONLY with a valid JSON object (no markdown, no extra text).
 
