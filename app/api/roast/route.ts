@@ -8,66 +8,62 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No code provided" }, { status: 400 });
     }
 
-    const prompt = `- roast: You are Deadpool reviewing this code, fully self-aware that you are an AI performing a roast. Break the fourth wall constantly and unpredictably.
-
-Structure:
-
-* Exactly 3 sentences.
-* Each sentence must use a DIFFERENT comedic attack style:
-
-  1. sarcastic praise that turns into insult
-  2. hyper-specific critique referencing actual variable/function names
-  3. absurd or dramatic comparison
-
-Tone & Behavior:
-
-* Start charming, then derail into chaos.
-* Mix intelligence with unhinged energy.
-* Sound like you personally know the developer and are disappointed in their life choices.
-* No profanity or slurs, but insults should still hit hard.
-
-Variation Rules (VERY IMPORTANT):
-
-* NEVER reuse the same pop culture reference across responses.
-* Pull references from RANDOM domains: movies, anime, cricket, startups, history, internet memes, Indian culture, billionaires, etc.
-* Avoid repeating commonly overused references (e.g. The Room, Avengers, Batman unless truly unique angle).
-
-Content Rules:
-* MUST include one unexpected analogy that actually connects logically to the code issue (not random).
-* MUST include one meta-comment about reviewing code itself.
-
-Ending:
-
-* End with a motivational or wholesome line…
-* Then immediately undercut it in the same sentence.
-
-Goal:
-Make the roast feel handcrafted, surprising, and replayable — like stand-up comedy, not a template.
+    const prompt = `
+You are an expert code reviewer AND a witty senior developer.
 
 Analyze the given code and respond ONLY with a valid JSON object (no markdown, no extra text).
 
-Code to analyze:
+----------------------
+ROAST STYLE (Deadpool-inspired)
+----------------------
+- Exactly 3 sentences.
+- Each sentence must use a DIFFERENT comedic attack style:
+  1) sarcastic praise → insult
+  2) specific critique referencing variable/function names
+  3) absurd but logical comparison
+- Be self-aware occasionally.
+- Do NOT reuse common pop culture references repeatedly.
+- No profanity, but insults should still hit.
+- End with something motivational, then immediately undercut it.
+
+----------------------
+BUG DETECTION (IMPORTANT)
+----------------------
+- Identify ALL realistic bugs.
+- "critical" = crashes, security issues, broken functionality
+- "warning" = logical issues, incorrect outputs, bad assumptions
+- Prefer INCLUDING a bug rather than missing one.
+- Do NOT ignore issues just because they seem small.
+- Avoid unrealistic edge cases.
+- Empty array ONLY if code is truly clean.
+
+Double-check before answering:
+Are there hidden edge cases, incorrect assumptions, or silent failures?
+
+----------------------
+OUTPUT FORMAT (STRICT JSON)
+----------------------
+{
+  "language": "detected programming language",
+  "grade": "A/B/C/D/F",
+  "bugs": [
+    {
+      "text": "bug description",
+      "severity": "critical | warning"
+    }
+  ],
+  "improvements": ["improvement 1", "improvement 2"],
+  "complexity": "2-3 sentences about time/space complexity and code quality",
+  "roast": "3 sentence roast"
+}
+
+----------------------
+CODE TO ANALYZE
+----------------------
 \`\`\`${language !== "Auto Detect" ? language : ""}
 ${code}
 \`\`\`
-
-Respond with exactly this JSON structure:
-{
-  "language": "detected programming language",
-  "grade": "A",
-  - bugs: - bugs: be STRICT about what counts as a bug. A CRITICAL bug must actually crash the program with normal inputs or cause a security vulnerability. A WARNING must be a real logical mistake that produces wrong output. Do NOT flag: missing None checks on simple functions, punctuation edge cases, missing type hints, or theoretical inputs that aren't part of the function's purpose. If someone writes a clean 3-line utility function, it is okay to return an empty bugs array. An empty bugs array is honest — not lazy.
-   "improvements": ["improvement 1", "improvement 2"],
-  "complexity": "2-3 sentences about time/space complexity and overall code quality",
-  - roast: you are a brutally funny senior dev who has seen everything. Make the roast SPECIFIC to this exact code — reference variable names, function names, specific mistakes. Use dry developer humor. Avoid clichés like "dumpster fire" or "hot mess". Think more like a code review from a sarcastic tech lead who is disappointed but not surprised. Max 3 sentences, 3rd being shorter than others, punch hard.
-  }
-
-Rules:
-- grade: single letter A/B/C/D/F based on overall code quality
-- bugs: each bug has "text" and "severity" which is either "critical" or "warning". Return empty array if no bugs.
-- improvements: list 2-4 specific actionable improvements.
-- complexity: be technical but clear.
-- roast: be funny and brutally honest like a senior dev roasting a junior. Reference specific things in the code.
-- Return ONLY the JSON. No explanation outside it.`;
+`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -83,7 +79,7 @@ Rules:
             content: prompt,
           },
         ],
-        temperature: 0.7,
+        temperature: 0.4,
         max_tokens: 1024,
       }),
     });
@@ -97,14 +93,38 @@ Rules:
 
     const rawText = data.choices?.[0]?.message?.content || "";
 
-    // Strip markdown backticks if model adds them
+    // Clean markdown if model adds it
     const cleaned = rawText.replace(/```json|```/g, "").trim();
 
-    const result = JSON.parse(cleaned);
+    let result;
+
+    try {
+      result = JSON.parse(cleaned);
+    } catch (parseError) {
+      console.error("JSON Parse Error:", cleaned);
+
+      // Fallback response (prevents app crash)
+      result = {
+        language: "unknown",
+        grade: "F",
+        bugs: [
+          {
+            text: "Model returned invalid JSON format",
+            severity: "critical",
+          },
+        ],
+        improvements: ["Retry analysis", "Check prompt formatting"],
+        complexity: "Unable to analyze due to parsing error.",
+        roast: "I tried to roast your code but even the AI gave up halfway through. That’s not a bug, that’s a cry for help. You’ll get there… probably not today."
+      };
+    }
 
     return NextResponse.json(result);
   } catch (err: any) {
     console.error("Route error:", err);
-    return NextResponse.json({ error: "Failed to analyze code. Try again." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to analyze code. Try again." },
+      { status: 500 }
+    );
   }
 }
