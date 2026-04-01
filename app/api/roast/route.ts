@@ -33,8 +33,6 @@ Variation Rules (VERY IMPORTANT):
 * Avoid repeating commonly overused references (e.g. The Room, Avengers, Batman unless truly unique angle).
 
 Content Rules:
-
-* MUST reference at least 2 exact variable or function names from the code.
 * MUST include one unexpected analogy that actually connects logically to the code issue (not random).
 * MUST include one meta-comment about reviewing code itself.
 
